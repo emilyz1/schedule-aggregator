@@ -207,8 +207,8 @@ async function handleRecurringSubmit(e) {
       addRecurringConflict(groupId, name, day, startTime, endTime, severity, description, allDay)
     ))
     e.target.reset()
-    document.getElementById('r-start').value = '09:00'
-    document.getElementById('r-end').value = '10:00'
+    document.getElementById('r-start').value = '17:00'
+    document.getElementById('r-end').value = '18:00'
     document.getElementById('r-time-row').hidden = false
     clearFormError('recurring-error')
   } catch (err) {
@@ -254,8 +254,8 @@ async function handleOneoffSubmit(e) {
   try {
     await addOneoffConflict(groupId, name, date, startTime, endTime, severity, description, allDay)
     e.target.reset()
-    document.getElementById('o-start').value = '09:00'
-    document.getElementById('o-end').value = '10:00'
+    document.getElementById('o-start').value = '17:00'
+    document.getElementById('o-end').value = '18:00'
     document.getElementById('o-time-row').hidden = false
     setupTimeSelects()  // re-apply date constraints after reset
     clearFormError('oneoff-error')

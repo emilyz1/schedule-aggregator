@@ -1,8 +1,8 @@
 // ── Time constants ──────────────────────────────────────────────────────────
 
-const START_HOUR = 7    // 7 AM
-const END_HOUR = 23     // 11 PM
-const TOTAL_SLOTS = (END_HOUR - START_HOUR) * 4  // 64 × 15-min slots
+const START_MINUTES = 16 * 60 + 30   // 4:30 PM = 990 min
+const END_MINUTES   = 24 * 60        // midnight = 1440 min
+const TOTAL_SLOTS   = (END_MINUTES - START_MINUTES) / 15  // 30 slots
 
 // Display order: Mon=0 … Sun=6
 // Stored dayOfWeek uses the same display index.
@@ -13,15 +13,17 @@ const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 // ── Time helpers ─────────────────────────────────────────────────────────────
 
 function slotToTime(slot) {
-  const totalMinutes = START_HOUR * 60 + slot * 15
-  const h = Math.floor(totalMinutes / 60)
+  const totalMinutes = START_MINUTES + slot * 15
+  const h = Math.floor(totalMinutes / 60) % 24  // slot 30 → 1440 min → 0 (midnight)
   const m = totalMinutes % 60
   return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`
 }
 
 function timeToSlot(hhmm) {
   const [h, m] = hhmm.split(':').map(Number)
-  return Math.round((h - START_HOUR) * 4 + m / 15)
+  // Treat "00:00" as midnight (end of visible day = END_MINUTES)
+  const minutes = (h === 0 && m === 0) ? END_MINUTES : h * 60 + m
+  return Math.round((minutes - START_MINUTES) / 15)
 }
 
 function formatTime(hhmm) {
@@ -146,8 +148,9 @@ function computeHeatmap(conflicts, { filterHardOnly = false, viewMode = 'aggrega
   const allUserNames = new Set(conflicts.map(c => c.userName))
 
   for (const c of filtered) {
-    const startSlot = timeToSlot(c.startTime)
-    const endSlot = timeToSlot(c.endTime)
+    // All-day conflicts cover every visible slot; skip timeToSlot for them
+    const startSlot = c.allDay ? 0 : timeToSlot(c.startTime)
+    const endSlot   = c.allDay ? TOTAL_SLOTS : timeToSlot(c.endTime)
 
     if (c.type === 'recurring') {
       for (let s = startSlot; s < endSlot; s++) {
@@ -156,7 +159,6 @@ function computeHeatmap(conflicts, { filterHardOnly = false, viewMode = 'aggrega
         }
       }
     } else {
-      // Parse date safely (avoid UTC shift)
       const d = new Date(c.date + 'T12:00:00')
       const displayDay = (d.getDay() + 6) % 7
 
@@ -177,17 +179,14 @@ function computeHeatmap(conflicts, { filterHardOnly = false, viewMode = 'aggrega
   return { heatmap, totalUsers: allUserNames.size }
 }
 
-// Returns top-3 non-overlapping 1-hour windows during business hours with fewest conflicts.
+// Returns top-3 non-overlapping 1-hour windows with fewest conflicts.
 function findBestTimes(heatmap, totalUsers) {
   if (totalUsers === 0) return []
-
-  const workStart = (9 - START_HOUR) * 4    // 9 AM
-  const workEnd   = (18 - START_HOUR) * 4   // 6 PM
 
   const candidates = []
 
   for (let day = 0; day < 7; day++) {
-    for (let slot = workStart; slot <= workEnd - 4; slot++) {
+    for (let slot = 0; slot <= TOTAL_SLOTS - 4; slot++) {
       const conflicted = new Set()
       for (let i = 0; i < 4; i++) {
         for (const u of heatmap[day][slot + i]) conflicted.add(u)

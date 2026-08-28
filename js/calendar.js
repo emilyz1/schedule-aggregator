@@ -35,8 +35,9 @@ function buildGrid(container) {
   // One row per 15-min slot
   for (let slot = 0; slot < TOTAL_SLOTS; slot++) {
     const label = makeEl('div', 'grid-time-label')
-    // Show text label only on hour marks (every 4 slots)
-    if (slot % 4 === 0) label.textContent = formatTime(slotToTime(slot))
+    // Show the first slot label (4:30 PM) and every exact hour after that
+    const slotMinutes = START_MINUTES + slot * 15
+    if (slot === 0 || slotMinutes % 60 === 0) label.textContent = formatTime(slotToTime(slot))
     container.appendChild(label)
 
     for (let day = 0; day < 7; day++) {
@@ -88,12 +89,16 @@ function showTooltip(event, day, slot, heatmap, totalUsers, allConflicts, filter
 
   const relevant = (filterHardOnly ? allConflicts.filter(c => c.severity === 'hard') : allConflicts)
     .filter(c => {
+      if (c.type === 'recurring') {
+        if (c.dayOfWeek !== day) return false
+      } else {
+        const d = new Date(c.date + 'T12:00:00')
+        if ((d.getDay() + 6) % 7 !== day) return false
+      }
+      if (c.allDay) return true
       const startSlot = timeToSlot(c.startTime)
       const endSlot = timeToSlot(c.endTime)
-      if (slot < startSlot || slot >= endSlot) return false
-      if (c.type === 'recurring') return c.dayOfWeek === day
-      const d = new Date(c.date + 'T12:00:00')
-      return (d.getDay() + 6) % 7 === day
+      return slot >= startSlot && slot < endSlot
     })
 
   if (relevant.length) {
@@ -144,12 +149,16 @@ function showCellDetail(day, slot, allConflicts, filterHardOnly) {
 
   const relevant = (filterHardOnly ? allConflicts.filter(c => c.severity === 'hard') : allConflicts)
     .filter(c => {
+      if (c.type === 'recurring') {
+        if (c.dayOfWeek !== day) return false
+      } else {
+        const d = new Date(c.date + 'T12:00:00')
+        if ((d.getDay() + 6) % 7 !== day) return false
+      }
+      if (c.allDay) return true
       const startSlot = timeToSlot(c.startTime)
       const endSlot = timeToSlot(c.endTime)
-      if (slot < startSlot || slot >= endSlot) return false
-      if (c.type === 'recurring') return c.dayOfWeek === day
-      const d = new Date(c.date + 'T12:00:00')
-      return (d.getDay() + 6) % 7 === day
+      return slot >= startSlot && slot < endSlot
     })
 
   if (relevant.length === 0) {
