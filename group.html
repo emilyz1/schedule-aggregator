@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Loading… — Scheduler</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="group-page">
+
+  <!-- Site header -->
+  <header class="site-header">
+    <h1 id="group-title">Loading…</h1>
+    <span class="group-meta" id="group-date-range"></span>
+    <a href="index.html" style="font-size:13px;color:var(--muted);">← Home</a>
+    <button class="btn-share" id="share-btn">Copy Link</button>
+  </header>
+
+  <!-- Best times banner (hidden until data loaded) -->
+  <div id="best-times-bar" hidden></div>
+
+  <!-- Filter bar -->
+  <div class="filter-bar">
+    <label>
+      <input type="checkbox" id="hard-only-toggle">
+      Hard conflicts only
+    </label>
+
+    <div class="view-toggle">
+      <button class="view-btn active" data-view="aggregate">Weekly average</button>
+      <button class="view-btn" data-view="specific">Specific week</button>
+    </div>
+
+    <div class="week-nav" id="week-nav" hidden>
+      <button id="prev-week">‹</button>
+      <span id="week-label"></span>
+      <button id="next-week">›</button>
+    </div>
+  </div>
+
+  <!-- Main layout: heatmap + sidebar -->
+  <div class="app-layout">
+
+    <!-- Heatmap -->
+    <section class="heatmap-section">
+      <div class="heatmap-grid" id="heatmap-grid"></div>
+      <div class="legend" id="legend"></div>
+    </section>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+
+      <!-- Name -->
+      <div class="sidebar-section">
+        <h3>Your name</h3>
+        <input type="text" id="user-name" placeholder="Enter your name" autocomplete="off">
+      </div>
+
+      <!-- Add conflict -->
+      <div class="sidebar-section">
+        <h3>Add a conflict</h3>
+
+        <div class="form-tabs">
+          <button class="tab-btn active" data-tab="recurring">Recurring</button>
+          <button class="tab-btn" data-tab="oneoff">One-off</button>
+        </div>
+
+        <!-- Recurring form -->
+        <form id="recurring-form">
+          <div class="field">
+            <label>Days</label>
+            <div class="day-picker">
+              <label class="day-check-label"><input type="checkbox" class="day-check" value="0"> Mon</label>
+              <label class="day-check-label"><input type="checkbox" class="day-check" value="1"> Tue</label>
+              <label class="day-check-label"><input type="checkbox" class="day-check" value="2"> Wed</label>
+              <label class="day-check-label"><input type="checkbox" class="day-check" value="3"> Thu</label>
+              <label class="day-check-label"><input type="checkbox" class="day-check" value="4"> Fri</label>
+              <label class="day-check-label"><input type="checkbox" class="day-check" value="5"> Sat</label>
+              <label class="day-check-label"><input type="checkbox" class="day-check" value="6"> Sun</label>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Time</label>
+            <div class="time-row">
+              <select id="r-start"></select>
+              <span>to</span>
+              <select id="r-end"></select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Severity</label>
+            <div class="severity-row">
+              <label class="sev-label">
+                <input type="radio" name="r-severity" value="hard" checked>
+                <span class="badge-hard">Hard</span>
+              </label>
+              <label class="sev-label">
+                <input type="radio" name="r-severity" value="soft">
+                <span class="badge-soft">Soft</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="r-description">Description <span style="font-weight:400;color:var(--muted)">(optional)</span></label>
+            <textarea id="r-description" placeholder="e.g. Weekly team standup"></textarea>
+          </div>
+
+          <p class="form-error" id="recurring-error" hidden></p>
+          <button type="submit" class="btn-submit">Add Recurring Conflict</button>
+          <button type="button" class="btn-cancel" id="cancel-edit-recurring" hidden>Cancel edit</button>
+        </form>
+
+        <!-- One-off form -->
+        <form id="oneoff-form" hidden>
+          <div class="field">
+            <label for="o-date">Date</label>
+            <input type="date" id="o-date">
+          </div>
+
+          <div class="field">
+            <label>Time</label>
+            <div class="time-row">
+              <select id="o-start"></select>
+              <span>to</span>
+              <select id="o-end"></select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Severity</label>
+            <div class="severity-row">
+              <label class="sev-label">
+                <input type="radio" name="o-severity" value="hard" checked>
+                <span class="badge-hard">Hard</span>
+              </label>
+              <label class="sev-label">
+                <input type="radio" name="o-severity" value="soft">
+                <span class="badge-soft">Soft</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="o-description">Description <span style="font-weight:400;color:var(--muted)">(optional)</span></label>
+            <textarea id="o-description" placeholder="e.g. Dentist appointment"></textarea>
+          </div>
+
+          <p class="form-error" id="oneoff-error" hidden></p>
+          <button type="submit" class="btn-submit">Add One-off Conflict</button>
+          <button type="button" class="btn-cancel" id="cancel-edit-oneoff" hidden>Cancel edit</button>
+        </form>
+      </div>
+
+      <!-- My conflicts -->
+      <div class="sidebar-section" style="flex:1">
+        <h3>Your conflicts</h3>
+        <div id="my-conflicts-list">
+          <p class="empty-hint">No conflicts submitted yet.</p>
+        </div>
+      </div>
+
+    </aside>
+  </div>
+
+  <!-- Tooltip (follows mouse) -->
+  <div id="tooltip" hidden></div>
+
+  <!-- Cell detail panel -->
+  <div id="cell-detail" hidden>
+    <div class="cell-detail-header">
+      <h3 id="cell-detail-title"></h3>
+      <button id="close-detail" title="Close">×</button>
+    </div>
+    <div id="cell-detail-content"></div>
+  </div>
+
+  <!-- Firebase (compat SDK — no build step required) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-credentials.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/conflicts.js"></script>
+  <script src="js/calendar.js"></script>
+  <script src="js/group.js"></script>
+</body>
+</html>

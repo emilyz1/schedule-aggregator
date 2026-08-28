@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scheduler — Group Availability</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="home-page">
+
+  <header class="home-header">
+    <h1>Scheduler</h1>
+    <p>Aggregate weekly availability across months — with conflict descriptions.</p>
+  </header>
+
+  <main class="home-main">
+    <div class="card">
+      <h2>Create a Group</h2>
+      <form id="create-form" novalidate>
+        <div class="form-group">
+          <label for="group-name">Group name</label>
+          <input type="text" id="group-name" placeholder="e.g. Team Alpha" autocomplete="off" required>
+        </div>
+        <div class="form-group">
+          <label>Date range</label>
+          <div class="date-row">
+            <div>
+              <label for="start-date" style="font-weight:400;color:var(--muted);">From</label>
+              <input type="date" id="start-date" required>
+            </div>
+            <div>
+              <label for="end-date" style="font-weight:400;color:var(--muted);">To</label>
+              <input type="date" id="end-date" required>
+            </div>
+          </div>
+        </div>
+        <p class="form-error" id="create-error" hidden></p>
+        <button type="submit" class="btn-primary">Create Group →</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>Join a Group</h2>
+      <form id="join-form" novalidate>
+        <div class="form-group">
+          <label for="join-id">Group ID or link</label>
+          <input type="text" id="join-id" placeholder="abc12345 or https://…" autocomplete="off" required>
+        </div>
+        <p class="form-error" id="join-error" hidden></p>
+        <button type="submit" class="btn-primary">Join →</button>
+      </form>
+    </div>
+  </main>
+
+  <!-- Firebase (compat SDK — no build step required) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-credentials.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/conflicts.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
