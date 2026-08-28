@@ -21,7 +21,7 @@ function slotToTime(slot) {
 
 function timeToSlot(hhmm) {
   const [h, m] = hhmm.split(':').map(Number)
-  return (h - START_HOUR) * 4 + m / 15
+  return Math.round((h - START_HOUR) * 4 + m / 15)
 }
 
 function formatTime(hhmm) {
@@ -83,15 +83,16 @@ function subscribeToConflicts(groupId, callback) {
     })
 }
 
-async function addRecurringConflict(groupId, userName, dayOfWeek, startTime, endTime, severity, description) {
+async function addRecurringConflict(groupId, userName, dayOfWeek, startTime, endTime, severity, description, allDay = false) {
   await db.collection('conflicts').add({
     groupId,
     userName,
     sessionKey: getSessionKey(),
     type: 'recurring',
-    dayOfWeek,      // display index: 0=Mon, 6=Sun
+    dayOfWeek,
     startTime,
     endTime,
+    allDay,
     severity,
     description,
     deleted: false,
@@ -99,15 +100,16 @@ async function addRecurringConflict(groupId, userName, dayOfWeek, startTime, end
   })
 }
 
-async function addOneoffConflict(groupId, userName, date, startTime, endTime, severity, description) {
+async function addOneoffConflict(groupId, userName, date, startTime, endTime, severity, description, allDay = false) {
   await db.collection('conflicts').add({
     groupId,
     userName,
     sessionKey: getSessionKey(),
     type: 'oneoff',
-    date,           // "YYYY-MM-DD"
+    date,
     startTime,
     endTime,
+    allDay,
     severity,
     description,
     deleted: false,

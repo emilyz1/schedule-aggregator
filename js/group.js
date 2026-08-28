@@ -138,6 +138,14 @@ function setupEventListeners() {
     rerender()
   })
 
+  // All-day toggles
+  document.getElementById('r-allday').addEventListener('change', e => {
+    document.getElementById('r-time-row').hidden = e.target.checked
+  })
+  document.getElementById('o-allday').addEventListener('change', e => {
+    document.getElementById('o-time-row').hidden = e.target.checked
+  })
+
   // Form tabs
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -180,9 +188,10 @@ async function handleRecurringSubmit(e) {
     return
   }
 
-  const startTime = document.getElementById('r-start').value
-  const endTime = document.getElementById('r-end').value
-  if (startTime >= endTime) {
+  const allDay = document.getElementById('r-allday').checked
+  const startTime = allDay ? '00:00' : document.getElementById('r-start').value
+  const endTime   = allDay ? '23:59' : document.getElementById('r-end').value
+  if (!allDay && startTime >= endTime) {
     showFormError('recurring-error', 'End time must be after start time.')
     return
   }
@@ -195,10 +204,12 @@ async function handleRecurringSubmit(e) {
 
   try {
     await Promise.all(selectedDays.map(day =>
-      addRecurringConflict(groupId, name, day, startTime, endTime, severity, description)
+      addRecurringConflict(groupId, name, day, startTime, endTime, severity, description, allDay)
     ))
     e.target.reset()
-    setupTimeSelects()
+    document.getElementById('r-start').value = '09:00'
+    document.getElementById('r-end').value = '10:00'
+    document.getElementById('r-time-row').hidden = false
     clearFormError('recurring-error')
   } catch (err) {
     showFormError('recurring-error', err.message || 'Failed to save.')
@@ -226,9 +237,10 @@ async function handleOneoffSubmit(e) {
     return
   }
 
-  const startTime = document.getElementById('o-start').value
-  const endTime = document.getElementById('o-end').value
-  if (startTime >= endTime) {
+  const allDay = document.getElementById('o-allday').checked
+  const startTime = allDay ? '00:00' : document.getElementById('o-start').value
+  const endTime   = allDay ? '23:59' : document.getElementById('o-end').value
+  if (!allDay && startTime >= endTime) {
     showFormError('oneoff-error', 'End time must be after start time.')
     return
   }
@@ -240,9 +252,12 @@ async function handleOneoffSubmit(e) {
   btn.disabled = true
 
   try {
-    await addOneoffConflict(groupId, name, date, startTime, endTime, severity, description)
+    await addOneoffConflict(groupId, name, date, startTime, endTime, severity, description, allDay)
     e.target.reset()
-    setupTimeSelects()
+    document.getElementById('o-start').value = '09:00'
+    document.getElementById('o-end').value = '10:00'
+    document.getElementById('o-time-row').hidden = false
+    setupTimeSelects()  // re-apply date constraints after reset
     clearFormError('oneoff-error')
   } catch (err) {
     showFormError('oneoff-error', err.message || 'Failed to save.')
@@ -276,7 +291,7 @@ function renderMyConflicts() {
     const label = c.type === 'recurring'
       ? `${DAYS[c.dayOfWeek]} ↻`
       : formatDate(c.date)
-    const timeRange = `${formatTime(c.startTime)} – ${formatTime(c.endTime)}`
+    const timeRange = c.allDay ? 'All day' : `${formatTime(c.startTime)} – ${formatTime(c.endTime)}`
     const badge = `<span class="badge-${c.severity}">${c.severity}</span>`
 
     return `
@@ -326,9 +341,6 @@ function getUserName() {
 }
 
 function setupTimeSelects() {
-  populateTimeSelects(document.getElementById('r-start'), document.getElementById('r-end'))
-  populateTimeSelects(document.getElementById('o-start'), document.getElementById('o-end'))
-
   const { start, end } = groupData.dateRange
   const oDate = document.getElementById('o-date')
   oDate.min = start

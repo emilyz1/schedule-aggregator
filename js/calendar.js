@@ -101,7 +101,8 @@ function showTooltip(event, day, slot, heatmap, totalUsers, allConflicts, filter
     relevant.forEach(c => {
       const badge = c.severity === 'hard' ? '<span class="badge-hard">hard</span>' : '<span class="badge-soft">soft</span>'
       const label = c.type === 'recurring' ? '↻' : formatDate(c.date)
-      html += `<li>${badge} <strong>${c.userName}</strong> ${label}${c.description ? ` — ${c.description}` : ''}</li>`
+      const timeStr = c.allDay ? 'All day' : `${formatTime(c.startTime)}–${formatTime(c.endTime)}`
+      html += `<li>${badge} <strong>${c.userName}</strong> ${label} · ${timeStr}${c.description ? ` — ${c.description}` : ''}</li>`
     })
     html += '</ul>'
   }
@@ -161,7 +162,7 @@ function showCellDetail(day, slot, allConflicts, filterHardOnly) {
           <span class="badge-${c.severity}">${c.severity}</span>
           <span class="detail-type">${c.type === 'recurring' ? '↻ recurring' : `${formatDate(c.date)}`}</span>
         </div>
-        <div class="detail-time">${formatTime(c.startTime)} – ${formatTime(c.endTime)}</div>
+        <div class="detail-time">${c.allDay ? 'All day' : `${formatTime(c.startTime)} – ${formatTime(c.endTime)}`}</div>
         ${c.description ? `<div class="detail-desc">${escHtml(c.description)}</div>` : ''}
       </div>
     `).join('')

@@ -81,11 +81,17 @@
           </div>
 
           <div class="field">
+            <label class="allday-label">
+              <input type="checkbox" id="r-allday"> All day
+            </label>
+          </div>
+
+          <div class="field" id="r-time-row">
             <label>Time</label>
             <div class="time-row">
-              <select id="r-start"></select>
+              <input type="time" id="r-start" step="900" value="09:00">
               <span>to</span>
-              <select id="r-end"></select>
+              <input type="time" id="r-end" step="900" value="10:00">
             </div>
           </div>
 
@@ -121,11 +127,17 @@
           </div>
 
           <div class="field">
+            <label class="allday-label">
+              <input type="checkbox" id="o-allday"> All day
+            </label>
+          </div>
+
+          <div class="field" id="o-time-row">
             <label>Time</label>
             <div class="time-row">
-              <select id="o-start"></select>
+              <input type="time" id="o-start" step="900" value="09:00">
               <span>to</span>
-              <select id="o-end"></select>
+              <input type="time" id="o-end" step="900" value="10:00">
             </div>
           </div>
 
